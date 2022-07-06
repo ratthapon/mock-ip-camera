@@ -1,0 +1,1 @@
+ffmpeg -re -stream_loop -1 -i ~/data/source.mp4 -c copy -s 1280x720 -r 10 -vcodec libx265 -an -f rtsp rtsp://localhost:8554/camerastream

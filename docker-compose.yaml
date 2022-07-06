@@ -1,0 +1,35 @@
+version: "3.5"
+networks:
+  dev_net:
+    driver: bridge
+
+services:
+  mock_rtsp_server:
+    image: aler9/rtsp-simple-server:latest
+    container_name: rtsp.$DOMAIN
+    environment:
+      TZ: Asia/Bangkok
+      RTSP_PROTOCOLS: tcp
+      RTSP_READBUFFERCOUNT: 1024
+      RTSP_READBUFFERSIZE: 4096
+    #   RTSP_PATHS_CAMERASTREAM_RUNONINIT: ffmpeg -re -stream_loop -1 -i /data/source.mp4 -c copy -s 1920x1080 -r ${FPS} -vcodec libx264 -an -f rtsp rtsp://localhost:8554/camerastream
+    #   RTSP_PATHS_CAMERASTREAM_RUNONINITRESTART: "yes"
+    # volumes: 
+    #   - ~/data/source.mp4:/data/source.mp4:ro
+    networks:
+      - dev_net
+    ports:
+      - 8554:8554
+
+  mock_rtsp_client_stream:
+    depends_on:
+      - mock_rtsp_server
+    image: linuxserver/ffmpeg:amd64-latest
+    container_name: rtsp-client.$DOMAIN
+    command: -re -stream_loop -1 -i /data/source.mp4 -c copy -s 1280x720 -r 30 -vcodec libx265 -an -f rtsp rtsp://rtsp.$DOMAIN:8554/teststream
+    environment:
+      TZ: Asia/Bangkok
+    volumes:
+      - ~/data/source.mp4:/data/source.mp4:ro
+    networks:
+      - dev_net
